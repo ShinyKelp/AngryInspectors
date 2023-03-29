@@ -15,7 +15,7 @@ using RWCustom;
 namespace CustomRegionQuests
 {
 
-    [BepInPlugin("ShinyKelp.CustomRelationships", "AngryInspectors", "1.0.0")]
+    [BepInPlugin("ShinyKelp.AngryInspectors", "AngryInspectors", "1.0.0")]
     public partial class CustomRelationshipsMod : BaseUnityPlugin
     {
         private void OnEnable()
@@ -62,10 +62,19 @@ namespace CustomRegionQuests
 
         private CreatureTemplate.Relationship InspectorAI_IUseARelationshipTracker_UpdateDynamicRelationship(On.MoreSlugcats.InspectorAI.orig_IUseARelationshipTracker_UpdateDynamicRelationship orig, InspectorAI self, RelationshipTracker.DynamicRelationship dRelation)
         {
+            if (dRelation is null)
+                return new CreatureTemplate.Relationship(CreatureTemplate.Relationship.Type.Ignores, 0f);
+
+            if(dRelation.trackerRep is null || dRelation.trackerRep.representedCreature is null)
+            {
+                dRelation.currentRelationship.type = CreatureTemplate.Relationship.Type.Ignores;
+                return new CreatureTemplate.Relationship(CreatureTemplate.Relationship.Type.Ignores, 0f);
+            }
+
             if (dRelation.trackerRep.representedCreature is AbstractCreature creature &&
                 StaticWorld.creatureTemplates[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].relationships[creature.creatureTemplate.type.Index].type == CreatureTemplate.Relationship.Type.Attacks)
             {
-                if (creature.realizedCreature.dead)
+                if (creature.realizedCreature is null || creature.realizedCreature.dead)
                 {
                     bool isEats = dRelation.currentRelationship.type == CreatureTemplate.Relationship.Type.Eats;
                     if (isEats)
