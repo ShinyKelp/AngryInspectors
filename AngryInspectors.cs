@@ -23,7 +23,7 @@ namespace CustomRegionQuests
             On.RainWorld.OnModsInit += RainWorldOnOnModsInit;
         }
 
-        private bool IsInit;
+        private bool IsInit, hasRedHorror, hasExplosiveDLL, hasMoreDLLs;
         private void RainWorldOnOnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
         {
             orig(self);
@@ -37,6 +37,25 @@ namespace CustomRegionQuests
                 On.MoreSlugcats.InspectorAI.IUseARelationshipTracker_UpdateDynamicRelationship += InspectorAI_IUseARelationshipTracker_UpdateDynamicRelationship;
                 On.Spear.HitSomething += Spear_HitSomething;
                 IsInit = true;
+                foreach (ModManager.Mod mod in ModManager.ActiveMods)
+                    {
+                        if (mod.name == "Red Horror Centipede")
+                        {
+                            hasRedHorror = true;
+                            continue;
+                        }
+                        if (mod.name == "More Dlls")
+                        {
+                            hasMoreDLLs = true;
+                            continue;
+                        }
+                        if(mod.name == "Explosive DLLs")
+                        {
+                            hasExplosiveDLL = true;
+                            continue;
+                        }
+                    }
+
             }
             catch (Exception ex)
             {
@@ -346,6 +365,12 @@ namespace CustomRegionQuests
             inspectorRels[MoreSlugcatsEnums.CreatureTemplateType.MirosVulture.Index].type = CreatureTemplate.Relationship.Type.Attacks;
             inspectorRels[MoreSlugcatsEnums.CreatureTemplateType.MirosVulture.Index].intensity = 1f;
 
+            inspectorRels[MoreSlugcatsEnums.CreatureTemplateType.FireBug.Index].type = CreatureTemplate.Relationship.Type.Attacks;
+            inspectorRels[MoreSlugcatsEnums.CreatureTemplateType.FireBug.Index].intensity = 1f;
+
+            inspectorRels[CreatureTemplate.Type.RedCentipede.Index].type = CreatureTemplate.Relationship.Type.Attacks;
+            inspectorRels[CreatureTemplate.Type.RedCentipede.Index].intensity = 1f;
+
             inspectorRels[CreatureTemplate.Type.Scavenger.Index].type = CreatureTemplate.Relationship.Type.Attacks;
             inspectorRels[CreatureTemplate.Type.Scavenger.Index].intensity = 1f;
             inspectorRels[MoreSlugcatsEnums.CreatureTemplateType.ScavengerElite.Index].type = CreatureTemplate.Relationship.Type.Attacks;
@@ -358,6 +383,30 @@ namespace CustomRegionQuests
             StaticWorld.creatureTemplates[CreatureTemplate.Type.DaddyLongLegs.Index].relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].type = CreatureTemplate.Relationship.Type.Afraid;
             StaticWorld.creatureTemplates[MoreSlugcatsEnums.CreatureTemplateType.TerrorLongLegs.Index].relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].type = CreatureTemplate.Relationship.Type.Afraid;
 
+            if(hasRedHorror)
+            {
+                inspectorRels[new CreatureTemplate.Type("RedHorrorCenti").Index].type = CreatureTemplate.Relationship.Type.Attacks;
+                inspectorRels[new CreatureTemplate.Type("RedHorrorCenti").Index].intensity = 1f;
+            }
+
+            if (hasExplosiveDLL)
+            {
+                inspectorRels[new CreatureTemplate.Type("ExplosiveDLL").Index].type = CreatureTemplate.Relationship.Type.Attacks;
+                inspectorRels[new CreatureTemplate.Type("ExplosiveDLL").Index].intensity = 1f;
+                StaticWorld.creatureTemplates[new CreatureTemplate.Type("ExplosiveDLL").Index].relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].type = CreatureTemplate.Relationship.Type.Afraid;
+                StaticWorld.creatureTemplates[new CreatureTemplate.Type("ExplosiveDLL").Index].relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].intensity = 0.5f;
+            }
+            if (hasMoreDLLs)
+            {
+                inspectorRels[new CreatureTemplate.Type("ExplosiveDaddyLongLegs").Index].type = CreatureTemplate.Relationship.Type.Attacks;
+                inspectorRels[new CreatureTemplate.Type("ExplosiveDaddyLongLegs").Index].intensity = 1f;
+                inspectorRels[new CreatureTemplate.Type("ZapDaddyLongLegs").Index].type = CreatureTemplate.Relationship.Type.Attacks;
+                inspectorRels[new CreatureTemplate.Type("ZapDaddyLongLegs").Index].intensity = 1f;
+                StaticWorld.creatureTemplates[new CreatureTemplate.Type("ExplosiveDaddyLongLegs").Index].relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].type = CreatureTemplate.Relationship.Type.Afraid;
+                StaticWorld.creatureTemplates[new CreatureTemplate.Type("ExplosiveDaddyLongLegs").Index].relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].intensity = 0.5f;
+                StaticWorld.creatureTemplates[new CreatureTemplate.Type("ZapDaddyLongLegs").Index].relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].type = CreatureTemplate.Relationship.Type.Afraid;
+                StaticWorld.creatureTemplates[new CreatureTemplate.Type("ZapDaddyLongLegs").Index].relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].intensity = 0.5f;
+            }
         }
         private void RainWorldGameOnShutDownProcess(On.RainWorldGame.orig_ShutDownProcess orig, RainWorldGame self)
         {
