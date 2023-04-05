@@ -379,34 +379,22 @@ namespace CustomRegionQuests
             inspectorRels[CreatureTemplate.Type.Slugcat.Index].intensity = .2f;
 
             //Longlegs (for inspectors)
-            StaticWorld.creatureTemplates[CreatureTemplate.Type.BrotherLongLegs.Index].relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].type = CreatureTemplate.Relationship.Type.Afraid;
-            StaticWorld.creatureTemplates[CreatureTemplate.Type.DaddyLongLegs.Index].relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].type = CreatureTemplate.Relationship.Type.Afraid;
-            StaticWorld.creatureTemplates[MoreSlugcatsEnums.CreatureTemplateType.TerrorLongLegs.Index].relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].type = CreatureTemplate.Relationship.Type.Afraid;
-
+            foreach(CreatureTemplate cTemplate in StaticWorld.creatureTemplates)
+            {
+                if(cTemplate.TopAncestor().type == CreatureTemplate.Type.DaddyLongLegs)
+                {
+                    inspectorRels[cTemplate.type.Index].type = CreatureTemplate.Relationship.Type.Attacks;
+                    inspectorRels[cTemplate.type.Index].intensity = 1f;
+                    cTemplate.relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].type = CreatureTemplate.Relationship.Type.Afraid;
+                    cTemplate.relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].intensity = 0.5f;
+                }
+            }
             if(hasRedHorror)
             {
                 inspectorRels[new CreatureTemplate.Type("RedHorrorCenti").Index].type = CreatureTemplate.Relationship.Type.Attacks;
                 inspectorRels[new CreatureTemplate.Type("RedHorrorCenti").Index].intensity = 1f;
             }
 
-            if (hasExplosiveDLL)
-            {
-                inspectorRels[new CreatureTemplate.Type("ExplosiveDLL").Index].type = CreatureTemplate.Relationship.Type.Attacks;
-                inspectorRels[new CreatureTemplate.Type("ExplosiveDLL").Index].intensity = 1f;
-                StaticWorld.creatureTemplates[new CreatureTemplate.Type("ExplosiveDLL").Index].relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].type = CreatureTemplate.Relationship.Type.Afraid;
-                StaticWorld.creatureTemplates[new CreatureTemplate.Type("ExplosiveDLL").Index].relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].intensity = 0.5f;
-            }
-            if (hasMoreDLLs)
-            {
-                inspectorRels[new CreatureTemplate.Type("ExplosiveDaddyLongLegs").Index].type = CreatureTemplate.Relationship.Type.Attacks;
-                inspectorRels[new CreatureTemplate.Type("ExplosiveDaddyLongLegs").Index].intensity = 1f;
-                inspectorRels[new CreatureTemplate.Type("ZapDaddyLongLegs").Index].type = CreatureTemplate.Relationship.Type.Attacks;
-                inspectorRels[new CreatureTemplate.Type("ZapDaddyLongLegs").Index].intensity = 1f;
-                StaticWorld.creatureTemplates[new CreatureTemplate.Type("ExplosiveDaddyLongLegs").Index].relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].type = CreatureTemplate.Relationship.Type.Afraid;
-                StaticWorld.creatureTemplates[new CreatureTemplate.Type("ExplosiveDaddyLongLegs").Index].relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].intensity = 0.5f;
-                StaticWorld.creatureTemplates[new CreatureTemplate.Type("ZapDaddyLongLegs").Index].relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].type = CreatureTemplate.Relationship.Type.Afraid;
-                StaticWorld.creatureTemplates[new CreatureTemplate.Type("ZapDaddyLongLegs").Index].relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].intensity = 0.5f;
-            }
         }
         private void RainWorldGameOnShutDownProcess(On.RainWorldGame.orig_ShutDownProcess orig, RainWorldGame self)
         {
