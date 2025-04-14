@@ -71,13 +71,13 @@ namespace CustomRegionQuests
 
         private bool Spear_HitSomething(On.Spear.orig_HitSomething orig, Spear self, SharedPhysics.CollisionResult result, bool eu)
         {
-            if(self.thrownBy.abstractCreature.creatureTemplate.type == MoreSlugcatsEnums.CreatureTemplateType.Inspector &&
+            if(self.thrownBy.abstractCreature.creatureTemplate.type == DLCSharedEnums.CreatureTemplateType.Inspector &&
                 result.obj is Creature creature && creature.abstractCreature.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.DaddyLongLegs)
             {
                 float damage = 4f;
                 if (creature.abstractCreature.creatureTemplate.type == CreatureTemplate.Type.DaddyLongLegs)
                     damage -= 2f;
-                if (creature.abstractCreature.creatureTemplate.type == MoreSlugcatsEnums.CreatureTemplateType.TerrorLongLegs)
+                if (creature.abstractCreature.creatureTemplate.type == DLCSharedEnums.CreatureTemplateType.TerrorLongLegs)
                     damage += 4f;
                 creature.Violence(self.firstChunk, self.firstChunk.vel, creature.firstChunk, null, Creature.DamageType.Stab, damage, 1f);
             }
@@ -96,7 +96,7 @@ namespace CustomRegionQuests
             }
 
             if (dRelation.trackerRep.representedCreature is AbstractCreature creature &&
-                StaticWorld.creatureTemplates[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].relationships[creature.creatureTemplate.type.Index].type == CreatureTemplate.Relationship.Type.Attacks)
+                StaticWorld.creatureTemplates[DLCSharedEnums.CreatureTemplateType.Inspector.Index].relationships[creature.creatureTemplate.type.Index].type == CreatureTemplate.Relationship.Type.Attacks)
             {
                 if (creature.realizedCreature is null || creature.realizedCreature.dead)
                 {
@@ -120,7 +120,7 @@ namespace CustomRegionQuests
                 }
                 else
                 {
-                    if(StaticWorld.creatureTemplates[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].relationships[creature.creatureTemplate.type.Index].intensity >= 1f || UnityEngine.Random.value < 0.001f)
+                    if(StaticWorld.creatureTemplates[DLCSharedEnums.CreatureTemplateType.Inspector.Index].relationships[creature.creatureTemplate.type.Index].intensity >= 1f || UnityEngine.Random.value < 0.001f)
                     {
                         bool itHasPrey = false;
                         foreach (PreyTracker.TrackedPrey prey in self.preyTracker.prey)
@@ -150,19 +150,19 @@ namespace CustomRegionQuests
 
             //Inspector relationships
 
-            CreatureTemplate.Relationship[] inspectorRels = StaticWorld.creatureTemplates[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].relationships;
+            CreatureTemplate.Relationship[] inspectorRels = StaticWorld.creatureTemplates[DLCSharedEnums.CreatureTemplateType.Inspector.Index].relationships;
 
             inspectorRels[CreatureTemplate.Type.BrotherLongLegs.Index].type = CreatureTemplate.Relationship.Type.Attacks;
             inspectorRels[CreatureTemplate.Type.BrotherLongLegs.Index].intensity = 1f;
             inspectorRels[CreatureTemplate.Type.DaddyLongLegs.Index].type = CreatureTemplate.Relationship.Type.Attacks;
             inspectorRels[CreatureTemplate.Type.DaddyLongLegs.Index].intensity = 1f;
-            inspectorRels[MoreSlugcatsEnums.CreatureTemplateType.TerrorLongLegs.Index].type = CreatureTemplate.Relationship.Type.Attacks;
-            inspectorRels[MoreSlugcatsEnums.CreatureTemplateType.TerrorLongLegs.Index].intensity = 1f;
+            inspectorRels[DLCSharedEnums.CreatureTemplateType.TerrorLongLegs.Index].type = CreatureTemplate.Relationship.Type.Attacks;
+            inspectorRels[DLCSharedEnums.CreatureTemplateType.TerrorLongLegs.Index].intensity = 1f;
 
             inspectorRels[CreatureTemplate.Type.MirosBird.Index].type = CreatureTemplate.Relationship.Type.Attacks;
             inspectorRels[CreatureTemplate.Type.MirosBird.Index].intensity = 1f;
-            inspectorRels[MoreSlugcatsEnums.CreatureTemplateType.MirosVulture.Index].type = CreatureTemplate.Relationship.Type.Attacks;
-            inspectorRels[MoreSlugcatsEnums.CreatureTemplateType.MirosVulture.Index].intensity = 1f;
+            inspectorRels[DLCSharedEnums.CreatureTemplateType.MirosVulture.Index].type = CreatureTemplate.Relationship.Type.Attacks;
+            inspectorRels[DLCSharedEnums.CreatureTemplateType.MirosVulture.Index].intensity = 1f;
 
             inspectorRels[MoreSlugcatsEnums.CreatureTemplateType.FireBug.Index].type = CreatureTemplate.Relationship.Type.Attacks;
             inspectorRels[MoreSlugcatsEnums.CreatureTemplateType.FireBug.Index].intensity = 1f;
@@ -172,8 +172,8 @@ namespace CustomRegionQuests
 
             inspectorRels[CreatureTemplate.Type.Scavenger.Index].type = CreatureTemplate.Relationship.Type.Attacks;
             inspectorRels[CreatureTemplate.Type.Scavenger.Index].intensity = 1f;
-            inspectorRels[MoreSlugcatsEnums.CreatureTemplateType.ScavengerElite.Index].type = CreatureTemplate.Relationship.Type.Attacks;
-            inspectorRels[MoreSlugcatsEnums.CreatureTemplateType.ScavengerElite.Index].intensity = 1f;
+            inspectorRels[DLCSharedEnums.CreatureTemplateType.ScavengerElite.Index].type = CreatureTemplate.Relationship.Type.Attacks;
+            inspectorRels[DLCSharedEnums.CreatureTemplateType.ScavengerElite.Index].intensity = 1f;
             inspectorRels[CreatureTemplate.Type.Slugcat.Index].type = CreatureTemplate.Relationship.Type.Attacks;
             inspectorRels[CreatureTemplate.Type.Slugcat.Index].intensity = .2f;
 
@@ -184,8 +184,8 @@ namespace CustomRegionQuests
                 {
                     inspectorRels[cTemplate.type.Index].type = CreatureTemplate.Relationship.Type.Attacks;
                     inspectorRels[cTemplate.type.Index].intensity = 1f;
-                    cTemplate.relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].type = CreatureTemplate.Relationship.Type.Afraid;
-                    cTemplate.relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].intensity = 0.5f;
+                    cTemplate.relationships[DLCSharedEnums.CreatureTemplateType.Inspector.Index].type = CreatureTemplate.Relationship.Type.Afraid;
+                    cTemplate.relationships[DLCSharedEnums.CreatureTemplateType.Inspector.Index].intensity = 0.5f;
                 }
             }
             if(hasRedHorror)
