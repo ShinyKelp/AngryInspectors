@@ -14,10 +14,10 @@ using Mono.Cecil.Cil;
 [module: UnverifiableCode]
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
 
-namespace CustomRegionQuests
+namespace AngryInspectors
 {
 
-    [BepInPlugin("ShinyKelp.AngryInspectors", "AngryInspectors", "1.0.2")]
+    [BepInPlugin("ShinyKelp.AngryInspectors", "AngryInspectors", "1.0.3")]
     public partial class CustomRelationshipsMod : BaseUnityPlugin
     {
         private void OnEnable()
@@ -25,29 +25,44 @@ namespace CustomRegionQuests
             On.RainWorld.OnModsInit += RainWorldOnOnModsInit;
         }
 
-        private bool IsInit, hasRedHorror;
+        private bool IsInit = false, hasRedHorror, hasOutspectors;
         private void RainWorldOnOnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
         {
             orig(self);
             try
             {
-                if (IsInit) return;
+                if (IsInit)
+                    return;
+
+                hasRedHorror = false;
+                hasOutspectors = false;
+                foreach (ModManager.Mod mod in ModManager.ActiveMods)
+                {
+                    if (mod.name == "Red Horror Centipede")
+                    {
+                        hasRedHorror = true;
+                        continue;
+                    }
+                    if (mod.name == "Outspectors")
+                    {
+                        hasOutspectors = true;
+                        continue;
+                    }
+                }
 
                 //Your hooks go here
                 //On.RainWorldGame.ShutDownProcess += RainWorldGameOnShutDownProcess;
                 On.StaticWorld.InitStaticWorld += ModifyInspectorRelationships;
+                //On.MoreSlugcats.Inspector.Act += InspectorUseFireEggs;
+                //On.MoreSlugcats.Inspector.HeadWeaponized += HeadWeaponizedwithFireEgg;
+                //IL.MoreSlugcats.Inspector.Act += PreventFireEggCrash;
+                //On.MoreSlugcats.InspectorAI.TrackItem += InspectorTrackFireEggs;
                 On.MoreSlugcats.InspectorAI.IUseARelationshipTracker_UpdateDynamicRelationship += InspectorAI_IUseARelationshipTracker_UpdateDynamicRelationship;
                 IL.MoreSlugcats.InspectorAI.IUseARelationshipTracker_UpdateDynamicRelationship += InspectorAI_IUseARelationshipTracker_UpdateDynamicRelationshipIL;
                 On.Spear.HitSomething += Spear_HitSomething;
+
+                
                 IsInit = true;
-                foreach (ModManager.Mod mod in ModManager.ActiveMods)
-                    {
-                        if (mod.name == "Red Horror Centipede")
-                        {
-                            hasRedHorror = true;
-                            continue;
-                        }
-                    }
 
             }
             catch (Exception ex)
@@ -57,10 +72,89 @@ namespace CustomRegionQuests
             }
         }
 
+        private bool HeadWeaponizedwithFireEgg(On.MoreSlugcats.Inspector.orig_HeadWeaponized orig, Inspector self, int index)
+        {
+            if ((self.State as Inspector.InspectorState).headHealth[index] > 0f)
+            {
+                if (self.headWantToGrabChunk[index] != null && self.headWantToGrabChunk[index].owner is FireEgg)
+                {
+                    return true;
+                }
+                if (self.headGrabChunk[index] != null && self.headGrabChunk[index].owner is FireEgg)
+                {
+                    return true;
+                }
+            }
+            return orig(self, index);
+        }
+
+        private void PreventFireEggCrash(ILContext il)
+        {
+            ILCursor c = new ILCursor(il);
+            c.GotoNext(MoveType.After,
+                x => x.MatchStloc(18),
+                x => x.MatchLdloc(18),
+                x => x.MatchLdfld<ItemTracker.ItemRepresentation>("representedItem"),
+                x => x.MatchLdfld<AbstractPhysicalObject>("realizedObject"),
+                x => x.MatchStloc(19),
+                x => x.MatchLdloc(19));
+            c.Index += 3;
+            c.Emit(OpCodes.Ldloc, 19);
+            c.EmitDelegate<Func<PhysicalObject, bool>>((realizedObject) =>
+            {
+                return realizedObject is Weapon;
+            });
+            c.Emit(OpCodes.And);
+        }
+
+        private bool InspectorTrackFireEggs(On.MoreSlugcats.InspectorAI.orig_TrackItem orig, InspectorAI self, AbstractPhysicalObject obj)
+        {
+            return orig(self, obj) || (obj.realizedObject != null && obj.realizedObject is FireEgg);
+        }
+
+        private void InspectorUseFireEggs(On.MoreSlugcats.Inspector.orig_Act orig, Inspector self)
+        {
+            
+            if (!self.safariControlled && self.anger > .5f)
+            {
+                for (int l = 0; l < Inspector.headCount(); l++)
+                {
+                    if ((self.State as Inspector.InspectorState).headHealth[l] > 0f)
+                    {
+                        if (self.headWantToGrabChunk[l] != null)
+                        {
+                            for (int n = 0; n < self.AI.itemTracker.ItemCount; n++)
+                            {
+                                ItemTracker.ItemRepresentation rep = self.AI.itemTracker.GetRep(n);
+                                PhysicalObject realizedObject = rep.representedItem.realizedObject;
+                                if (realizedObject != null && rep.VisualContact && realizedObject is FireEgg fEgg && fEgg.activeCounter <= 0 && Vector2.Distance(fEgg.firstChunk.pos, self.mainBodyChunk.pos) < 400f && Vector2.Distance(fEgg.firstChunk.pos, self.heads[l].Tip.pos) > 10f && !self.isOtherHeadsGoalChunk(l, fEgg.firstChunk) && fEgg.mode != Weapon.Mode.Thrown && Vector2.Distance(self.heads[l].Tip.pos, fEgg.firstChunk.pos) < Vector2.Distance(self.heads[l].Tip.pos, self.headWantToGrabChunk[l].pos))
+                                {
+                                    self.headWantToGrabChunk[l] = fEgg.firstChunk;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            for (int n = 0; n < self.AI.itemTracker.ItemCount; n++)
+                            {
+                                ItemTracker.ItemRepresentation rep = self.AI.itemTracker.GetRep(n);
+                                PhysicalObject realizedObject = rep.representedItem.realizedObject;
+                                if (realizedObject != null && rep.VisualContact && realizedObject is FireEgg fEgg && fEgg.activeCounter <= 0 && Vector2.Distance(fEgg.firstChunk.pos, self.mainBodyChunk.pos) < 400f && Vector2.Distance(fEgg.firstChunk.pos, self.heads[l].Tip.pos) > 10f && !self.isOtherHeadsGoalChunk(l, fEgg.firstChunk) && fEgg.mode != Weapon.Mode.Thrown)
+                                {
+                                    self.headWantToGrabChunk[l] = fEgg.firstChunk;
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+            orig(self);
+        }
+
         private void InspectorAI_IUseARelationshipTracker_UpdateDynamicRelationshipIL(ILContext il)
         {
             ILCursor c = new ILCursor(il);
-
             c.GotoNext(MoveType.After,
                 x => x.MatchLdloc(7)
                 );
@@ -75,11 +169,20 @@ namespace CustomRegionQuests
                 result.obj is Creature creature && creature.abstractCreature.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.DaddyLongLegs)
             {
                 float damage = 4f;
+                int stun = 0;
+                if (creature.abstractCreature.creatureTemplate.type != CreatureTemplate.Type.BrotherLongLegs)
+                    stun = 20;
                 if (creature.abstractCreature.creatureTemplate.type == CreatureTemplate.Type.DaddyLongLegs)
-                    damage -= 2f;
+                {
+                    damage = 2f;
+                }
                 if (creature.abstractCreature.creatureTemplate.type == MoreSlugcatsEnums.CreatureTemplateType.TerrorLongLegs)
-                    damage += 4f;
+                {
+                    damage = 8f;
+                    stun = 18;
+                }
                 creature.Violence(self.firstChunk, self.firstChunk.vel, creature.firstChunk, null, Creature.DamageType.Stab, damage, 1f);
+                creature.stun = Mathf.Max(creature.stun, stun);
             }
             return orig(self, result, eu);
         }
@@ -147,7 +250,6 @@ namespace CustomRegionQuests
         private void ModifyInspectorRelationships(On.StaticWorld.orig_InitStaticWorld orig)
         {
             orig();
-
             //Inspector relationships
 
             CreatureTemplate.Relationship[] inspectorRels = StaticWorld.creatureTemplates[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].relationships;
@@ -174,9 +276,10 @@ namespace CustomRegionQuests
             inspectorRels[CreatureTemplate.Type.Scavenger.Index].intensity = 1f;
             inspectorRels[MoreSlugcatsEnums.CreatureTemplateType.ScavengerElite.Index].type = CreatureTemplate.Relationship.Type.Attacks;
             inspectorRels[MoreSlugcatsEnums.CreatureTemplateType.ScavengerElite.Index].intensity = 1f;
+            inspectorRels[MoreSlugcatsEnums.CreatureTemplateType.ScavengerKing.Index].type = CreatureTemplate.Relationship.Type.Attacks;
+            inspectorRels[MoreSlugcatsEnums.CreatureTemplateType.ScavengerKing.Index].intensity = 1f;
             inspectorRels[CreatureTemplate.Type.Slugcat.Index].type = CreatureTemplate.Relationship.Type.Attacks;
             inspectorRels[CreatureTemplate.Type.Slugcat.Index].intensity = .2f;
-
             //Longlegs (for inspectors)
             foreach(CreatureTemplate cTemplate in StaticWorld.creatureTemplates)
             {
@@ -186,9 +289,14 @@ namespace CustomRegionQuests
                     inspectorRels[cTemplate.type.Index].intensity = 1f;
                     cTemplate.relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].type = CreatureTemplate.Relationship.Type.Afraid;
                     cTemplate.relationships[MoreSlugcatsEnums.CreatureTemplateType.Inspector.Index].intensity = 0.5f;
+                    if (hasOutspectors && new CreatureTemplate.Type("Outspector").Index != -1)
+                    {
+                        StaticWorld.creatureTemplates[cTemplate.type.Index].relationships[new CreatureTemplate.Type("Outspector").Index].type = CreatureTemplate.Relationship.Type.Afraid;
+                        StaticWorld.creatureTemplates[cTemplate.type.Index].relationships[new CreatureTemplate.Type("OutspectorB").Index].type = CreatureTemplate.Relationship.Type.Afraid;
+                    }
                 }
             }
-            if(hasRedHorror)
+            if (hasRedHorror)
             {
                 inspectorRels[new CreatureTemplate.Type("RedHorrorCenti").Index].type = CreatureTemplate.Relationship.Type.Attacks;
                 inspectorRels[new CreatureTemplate.Type("RedHorrorCenti").Index].intensity = 1f;
